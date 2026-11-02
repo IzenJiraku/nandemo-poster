@@ -80,3 +80,9 @@ button:focus-visible, input:focus-visible, .file input:focus-visible + span { ou
 .field button { padding: 6px 10px; }
 .note { font-size: .8rem; color: var(--muted); margin: 10px 0 0; }
 .row button { white-space: nowrap; }
+.layout-row { display: flex; gap: 8px; }
+.layout-row select {
+  flex: 1; font: inherit; padding: 8px 10px; border-radius: 6px;
+  border: 1px solid var(--line); background: var(--bg); color: var(--text);
+}
+#layout-now { margin-top: 6px; }
