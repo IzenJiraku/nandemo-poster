@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>なんでもポスター</title>
+<meta name="description" content="写真を入れるだけで、映画っぽいポスターになる。">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700&family=Dela+Gothic+One&family=Gowun+Batang&family=Noto+Sans+KR:wght@700;900&family=Yuji+Boku&family=Noto+Sans+JP:wght@400;500;700;900&family=Noto+Serif+JP:wght@500;900&family=Orbitron:wght@700&family=Shippori+Mincho+B1:wght@600;800&family=Yuji+Syuku&family=Zen+Maru+Gothic:wght@700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header>
+  <h1>なんでもポスター</h1>
+  <p class="lead">写真を入れると、映画っぽいポスターになります。写真はこの端末の中だけで処理され、どこにも送信されません。</p>
+</header>
+
+<main>
+  <section class="preview">
+    <div class="frame">
+      <canvas id="poster" aria-label="ポスターのプレビュー"></canvas>
+      <p id="drop-hint" class="hint">写真を選ぶと、ここに反映されます</p>
+    </div>
+    <button id="save" class="primary" type="button">画像を保存</button>
+  </section>
+
+  <section class="controls">
+    <label class="file">
+      <input id="photo" type="file" accept="image/*">
+      <span>写真を選ぶ</span>
+    </label>
+
+    <details class="focus">
+      <summary>写真の位置を調整</summary>
+      <label>左右 <input id="focusX" type="range" min="0" max="100" value="50"></label>
+      <label>上下 <input id="focusY" type="range" min="0" max="100" value="50"></label>
+    </details>
+
+    <h2>ジャンル</h2>
+    <div id="genres" class="chips"></div>
+
+    <div class="row">
+      <button id="all-random" type="button" class="secondary">ぜんぶおまかせ</button>
+      <button id="text-random" type="button" class="secondary">文字だけ変える</button>
+    </div>
+
+    <h2>クレジット</h2>
+    <div class="field"><label for="f-title">タイトル</label><input id="f-title"><button type="button" data-roll="title" aria-label="タイトルをおまかせ">🎲</button></div>
+    <div class="field"><label for="f-en">サブ</label><input id="f-en"><button type="button" data-roll="en" aria-label="サブタイトルをおまかせ">🎲</button></div>
+    <div class="field"><label for="f-tagline">コピー</label><input id="f-tagline"><button type="button" data-roll="tagline" aria-label="コピーをおまかせ">🎲</button></div>
+    <div class="field"><label for="f-cast">キャスト</label><input id="f-cast" placeholder="読点で区切る"><button type="button" data-roll="cast" aria-label="キャストをおまかせ">🎲</button></div>
+    <div class="field"><label for="f-director">監督</label><input id="f-director"><button type="button" data-roll="director" aria-label="監督をおまかせ">🎲</button></div>
+    <div class="field"><label for="f-date">公開日</label><input id="f-date"><button type="button" data-roll="date" aria-label="公開日をおまかせ">🎲</button></div>
+    <p class="note">おまかせで出る人名はすべて架空です。</p>
+  </section>
+</main>
+
+<script src="data.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
