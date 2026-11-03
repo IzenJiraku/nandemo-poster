@@ -775,7 +775,7 @@ function buildGenreChips() {
 }
 function buildLayoutSelect() {
   const sel = $("#layout");
-  const auto = document.createElement("option"); auto.value = "auto"; auto.textContent = "おまかせ"; sel.appendChild(auto);
+  const auto = document.createElement("option"); auto.value = "auto"; auto.textContent = "ジャンルに合わせる（自動）"; sel.appendChild(auto);
   for (const [k, l] of Object.entries(LAYOUTS)) {
     const o = document.createElement("option"); o.value = k; o.textContent = l.label; sel.appendChild(o);
   }
