@@ -765,17 +765,17 @@ function freshContent(g) {
 
 function buildGenreChips() {
   const box = $("#genres");
-  for (const k of [...Object.keys(GENRES), "random"]) {
+  for (const k of Object.keys(GENRES)) {
     const b = document.createElement("button");
     b.type = "button"; b.className = "chip"; b.dataset.genre = k;
-    b.textContent = k === "random" ? "おまかせ" : GENRES[k].label;
-    b.addEventListener("click", () => setGenre(k === "random" ? pickGenre() : k, true));
+    b.textContent = GENRES[k].label;
+    b.addEventListener("click", () => setGenre(k, true));
     box.appendChild(b);
   }
 }
 function buildLayoutSelect() {
   const sel = $("#layout");
-  const auto = document.createElement("option"); auto.value = "auto"; auto.textContent = "おまかせ（ジャンルに合うもの）"; sel.appendChild(auto);
+  const auto = document.createElement("option"); auto.value = "auto"; auto.textContent = "おまかせ"; sel.appendChild(auto);
   for (const [k, l] of Object.entries(LAYOUTS)) {
     const o = document.createElement("option"); o.value = k; o.textContent = l.label; sel.appendChild(o);
   }
@@ -783,7 +783,7 @@ function buildLayoutSelect() {
 }
 function syncLayoutSelect() {
   $("#layout").value = state.layout;
-  $("#layout-now").textContent = state.layout === "auto" ? `いまの構図：${LAYOUTS[state.usedLayout].label}` : "";
+  $("#layout-now").textContent = LAYOUTS[state.usedLayout].label;
 }
 function pickGenre() {
   const ks = Object.keys(GENRES).filter((k) => k !== state.genre);
@@ -791,7 +791,11 @@ function pickGenre() {
 }
 function setGenre(g, refreshText) {
   state.genre = g; state.usedLayout = null;
-  document.querySelectorAll(".chip").forEach((b) => b.setAttribute("aria-pressed", b.dataset.genre === g));
+  document.querySelectorAll(".chip").forEach((b) => {
+    const on = b.dataset.genre === g;
+    b.setAttribute("aria-pressed", on);
+    if (on) { const box = b.parentElement; box.scrollTo({ left: b.offsetLeft - box.clientWidth / 2 + b.clientWidth / 2, behavior: "smooth" }); }
+  });
   if (refreshText) { state.content = freshContent(g); syncFields(); }
   render();
 }
@@ -815,32 +819,52 @@ function rollField(f) {
   syncFields(); render();
 }
 
-$("#photo").addEventListener("change", (e) => {
-  const file = e.target.files[0]; if (!file) return;
+function loadFile(file) {
+  if (!file || !file.type.startsWith("image/")) return;
   const img = new Image();
-  img.onload = () => { state.img = img; $("#drop-hint").hidden = true; render(); };
+  img.onload = () => {
+    state.img = img;
+    document.body.dataset.mode = "studio";
+    window.scrollTo(0, 0);
+    if (!state.started) { state.started = true; state.layout = "auto"; setGenre(pickGenre(), true); }
+    else render();
+  };
   img.src = URL.createObjectURL(file);
-});
+}
+document.querySelectorAll("input[type=file]").forEach((inp) => inp.addEventListener("change", (e) => { loadFile(e.target.files[0]); e.target.value = ""; }));
+window.addEventListener("dragover", (e) => { e.preventDefault(); document.body.classList.add("dragging"); });
+window.addEventListener("dragleave", (e) => { if (!e.relatedTarget) document.body.classList.remove("dragging"); });
+window.addEventListener("drop", (e) => { e.preventDefault(); document.body.classList.remove("dragging"); loadFile(e.dataTransfer.files[0]); });
+
 for (const f of FIELDS) $(`#f-${f}`).addEventListener("input", onInput);
 document.querySelectorAll("[data-roll]").forEach((b) => b.addEventListener("click", () => rollField(b.dataset.roll)));
-$("#all-random").addEventListener("click", () => { state.layout = "auto"; setGenre(pickGenre(), true); });
+$("#shuffle").addEventListener("click", () => { state.layout = "auto"; setGenre(pickGenre(), true); });
 $("#text-random").addEventListener("click", () => { state.content = freshContent(state.genre); syncFields(); render(); });
 $("#layout-roll").addEventListener("click", shuffleLayout);
 for (const axis of ["X", "Y"]) {
   $(`#focus${axis}`).addEventListener("input", (e) => { state[`focus${axis}`] = +e.target.value; clearTimeout(t); t = setTimeout(render, 60); });
 }
+const sheet = $("#sheet");
+$("#open-edit").addEventListener("click", () => sheet.showModal());
+$("#close-edit").addEventListener("click", () => sheet.close());
+sheet.addEventListener("click", (e) => { if (e.target === sheet) sheet.close(); });
+
 $("#save").addEventListener("click", () => {
-  canvas.toBlob((blob) => {
+  canvas.toBlob(async (blob) => {
+    const name = `${state.content.title || "poster"}.png`;
+    const file = new File([blob], name, { type: "image/png" });
+    // スマホは共有シートから「画像を保存」できるようにする
+    if (matchMedia("(pointer: coarse)").matches && navigator.canShare && navigator.canShare({ files: [file] })) {
+      try { await navigator.share({ files: [file] }); return; } catch (e) { if (e.name === "AbortError") return; }
+    }
     const a = document.createElement("a");
-    a.href = URL.createObjectURL(blob);
-    a.download = `${state.content.title || "poster"}.png`;
-    a.click();
+    a.href = URL.createObjectURL(blob); a.download = name; a.click();
     setTimeout(() => URL.revokeObjectURL(a.href), 5000);
   }, "image/png");
 });
 
 // 確認用：コンソールから構図やジャンルを切り替えられる
-window.nandemo = { state, render, LAYOUTS, STYLES, setGenre };
+window.nandemo = { state, render, LAYOUTS, STYLES, setGenre, loadFile };
 
 buildGenreChips();
 buildLayoutSelect();
