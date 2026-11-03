@@ -18,7 +18,7 @@ function drawPhoto() {
     return;
   }
   const img = state.img;
-  const s = Math.max(W / img.width, H / img.height);
+  const s = Math.max(W / img.width, H / img.height) * (state.zoom || 1);
   const dw = img.width * s, dh = img.height * s;
   ctx.drawImage(img, (W - dw) * (state.focusX / 100), (H - dh) * (state.focusY / 100), dw, dh);
 }
@@ -120,6 +120,7 @@ function drawSnapInto(snap, x, y, w, h) {
   const s = Math.max(w / W, h / H);
   const sw = w / s, sh = h / s;
   ctx.drawImage(snap, (W - sw) / 2, (H - sh) * (state.focusY / 100), sw, sh, x, y, w, h);
+  const r = ROLE; ROLE = "photo"; markBox(x, y, x + w, y + h, 0); ROLE = r;
 }
 
 // 文字色の自動切り替え用。スクリムを重ねる前の写真の明るさで判定する。
@@ -137,6 +138,32 @@ function isBright(x, y, w, h) {
 // =====================================================================
 // 文字組みの部品
 // =====================================================================
+// =====================================================================
+// ガイド表示用：描いた文字の位置と役割を記録する／消した項目は描かない
+// =====================================================================
+let HIDE = new Set();   // 消している項目（title / en / tagline / cast / credits / date / extras）
+let GUIDE = null;       // 記録中なら配列
+let ROLE = null;        // いま描いている項目
+let OFFS = {};          // 項目ごとに、ドラッグで動かした量 {role: [dx, dy]}
+function withOffset(role, fn) {
+  const o = OFFS[role];
+  if (!o || (!o[0] && !o[1])) return fn();
+  ctx.save(); ctx.translate(o[0], o[1]);
+  try { return fn(); } finally { ctx.restore(); }
+}
+function markBox(x0, y0, x1, y1, size) {
+  if (!GUIDE || !(x1 > x0)) return;
+  const m = ctx.getTransform();
+  const pts = [[x0, y0], [x1, y0], [x0, y1], [x1, y1]].map(([x, y]) => [m.a * x + m.c * y + m.e, m.b * x + m.d * y + m.f]);
+  const xs = pts.map((p) => p[0]), ys = pts.map((p) => p[1]);
+  GUIDE.push({ role: ROLE || "deco", x0: Math.min(...xs), y0: Math.min(...ys), x1: Math.max(...xs), y1: Math.max(...ys), size });
+}
+function as(role, fn) {
+  if (HIDE.has(role)) return undefined;
+  const prev = ROLE; ROLE = role;
+  try { return prev === role ? fn() : withOffset(role, fn); } finally { ROLE = prev; }
+}
+
 function setFont(weight, size, family) { ctx.font = `${weight} ${size}px ${family}`; }
 function spacedWidth(text, spacing) {
   let w = 0; for (const c of text) w += ctx.measureText(c).width;
@@ -166,6 +193,7 @@ function text(str, x, y, { weight = 400, size = 40, family = "'Noto Sans JP'", c
     cx += ctx.measureText(c).width + sp;
   }
   ctx.restore();
+  markBox(cx - tw - sp, y - s * 0.86, cx - sp, y + s * 0.16, s);
   return { size: s, width: tw };
 }
 
@@ -193,6 +221,7 @@ function vtext(str, x, y, { weight = 500, size = 44, family = "'Noto Serif JP'",
     cy += s * lineGap;
   }
   ctx.restore();
+  markBox(x - s * 0.55, y, x + s * 0.55, cy - s * (lineGap - 1), s);
   return s;
 }
 
@@ -259,6 +288,7 @@ function titleFill(t, x, y, sz, col) {
   return col;
 }
 function drawTitle(c, x, y, { size = 120, align = "center", maxW = W * 0.88, onPaper = false } = {}) {
+  if (!c.title) return { size: 0, width: 0 };
   const t = S.title;
   const col = onPaper ? (t.paperColor || S.ink) : colorOf(t.color, false);
   const sz = size * (t.scale || 1);
@@ -306,6 +336,7 @@ function seal(ch, x, y, s) {
 }
 function drawVTitle(c, x, y, { size = 140, maxH = H * 0.66, onPaper = false } = {}) {
   const t = S.title;
+  if (!c.title) return 0;
   if (t.deco === "seal") {
     const n = [...c.title].length; let s = size * (t.scale || 1);
     while (s > 14 && n * s * 1.05 > maxH) s -= 2;
@@ -372,6 +403,7 @@ function billingBlock(c, x, y, w, { color = "#fff", align = "center", lines = 3,
     const lw = ctx.measureText(l).width * sx;
     const lx = align === "center" ? x - lw / 2 : align === "right" ? x - lw : x;
     ctx.save(); ctx.translate(lx, y + i * size * 1.05); ctx.scale(sx, 1); ctx.fillText(l, 0, 0); ctx.restore();
+    markBox(lx, y + i * size * 1.05 - size * 0.86, lx + lw, y + i * size * 1.05 + size * 0.16, size * sx);
   });
   ctx.restore();
   return out.length * size * 1.05;
@@ -433,6 +465,7 @@ function festivalLaurels(c, x, y, color, max = 3, scale = 1) {
     const lx = x + (i - (fs.length - 1) / 2) * gap;
     ctx.save(); ctx.translate(lx, y); ctx.scale(scale, scale); ctx.translate(-lx, -y);
     laurel(lx, y, [fest, award], color);
+    markBox(lx - 125, y - 100, lx + 125, y + 95, 0);
     ctx.restore();
   });
 }
@@ -443,4 +476,17 @@ function extras(c, x, y, w, onPaper = false) {
   autoInk(y - 180, y + 120);
   S.extras(c, x, y, w, onPaper ? S.ink : AUTO_DARK ? "#26292b" : "#ffffff");
   AUTO_DARK = false;
+}
+
+// 各項目の描画に「役割」をつけ、消している項目は描かない
+for (const [name, role, empty] of [["drawTitle", "title", { size: 0, width: 0 }], ["drawVTitle", "title", 0], ["drawSub", "en", { size: 0, width: 0 }],
+  ["drawTagline", "tagline", { size: 0, width: 0 }], ["drawVTagline", "tagline", undefined], ["drawCast", "cast", { size: 0, width: 0 }],
+  ["drawCredits", "credits", undefined], ["billingBlock", "credits", 0], ["drawDate", "date", { size: 0, width: 0 }],
+  ["extras", "extras", undefined], ["festivalLaurels", "extras", undefined]]) {
+  const f = window[name];
+  window[name] = function (...args) {
+    if (HIDE.has(role)) return empty;
+    const prev = ROLE; ROLE = role;
+    try { return prev === role ? f.apply(this, args) : withOffset(role, () => f.apply(this, args)); } finally { ROLE = prev; }
+  };
 }

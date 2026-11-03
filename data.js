@@ -44,6 +44,10 @@ const MONTH_EN = ["JANUARY", "FEBRUARY", "MARCH", "APRIL", "MAY", "JUNE", "JULY"
 const MONTH_FR = ["JANVIER", "FÉVRIER", "MARS", "AVRIL", "MAI", "JUIN", "JUILLET", "AOÛT", "SEPTEMBRE", "OCTOBRE", "NOVEMBRE", "DÉCEMBRE"];
 function futureDate() { const d = new Date(); d.setDate(d.getDate() + randInt(30, 500)); return d; }
 const SEASON_WORD = ["春", "夏", "初夏", "秋", "冬", "晩秋", "初春"];
+// 日付から季節のことば
+function seasonOf(d) { return ["冬", "冬", "春", "春", "初夏", "夏", "夏", "夏", "秋", "秋", "晩秋", "冬"][d.getMonth()]; }
+function holidayOf(d) { const m = d.getMonth() + 1; return m <= 3 ? "春休み" : m <= 5 ? "ゴールデンウィーク" : m <= 9 ? "夏休み" : "冬休み"; }
+function eraSeason(d) { return ["正月", "正月", "春", "春", "春", "盛夏", "盛夏", "盛夏", "秋", "秋", "秋", "正月"][d.getMonth()]; }
 
 // ---------------------------------------------------------------------
 // タイトル生成用の語彙（[日本語, 英語]）
@@ -110,7 +114,7 @@ const GENRES = {
     taglines: ["あの秋、パンの匂いだけが本当のことを知っていた。", "言えなかったことは、全部ここに置いてきた。", "十七歳の僕らは、まだ何者でもなかった。",
       "この坂をのぼりきったら、きっと大人になる。", "忘れたくない一日が、ひとつだけある。", "走れ。夏が終わる前に。", "好きだった。ただ、それだけだった。",
       "放課後は、永遠に続くと思っていた。", "ぼくらの青は、まだ乾いていない。", "あの日の約束、まだ有効ですか。"],
-    date: () => `${futureDate().getFullYear()}年 ${pick(SEASON_WORD)}、全国ロードショー`,
+    date: (d = futureDate()) => `${d.getFullYear()}年 ${seasonOf(d)}、全国ロードショー`,
   },
   taiwan: {
     label: "台湾青春", tone: "quiet",
@@ -119,7 +123,7 @@ const GENRES = {
       ["ぼくらの青い季節", "我們的青春季節"], ["百回目の告白", "第一百次告白"], ["夏の終わりの花火", "夏末的煙火"]],
     taglines: ["あの頃のぼくらは、なんでもできる気がしていた。", "好きって言えなかった夏が、いちばん眩しい。", "きみの隣で、世界は少しだけ優しかった。",
       "大人になっても、あの屋上を覚えている。", "青春は、たぶん一度きりの通り雨。", "ずっと友達で、いたかった。"],
-    date: () => { const d = futureDate(); return `${d.getFullYear()}年${d.getMonth() + 1}月${d.getDate()}日 公開`; },
+    date: (d = futureDate()) => { return `${d.getFullYear()}年${d.getMonth() + 1}月${d.getDate()}日 公開`; },
   },
   korean: {
     label: "韓国映画風", tone: "quiet",
@@ -129,7 +133,7 @@ const GENRES = {
     taglines: ["何も起きない日々が、いちばん愛おしかった。", "あの日の私に、会いにいく。", "季節はめぐっても、きみは戻らない。",
       "ありふれた午後に、奇跡はあった。", "ここにいたことを、誰かが覚えていてくれたら。", "大丈夫じゃなくても、大丈夫。",
       "さよならの代わりに、ごはんを作った。", "私たちは、まだ途中にいる。"],
-    date: () => { const d = futureDate(); return `${d.getFullYear()}年${d.getMonth() + 1}月 公開`; },
+    date: (d = futureDate()) => { return `${d.getFullYear()}年${d.getMonth() + 1}月 公開`; },
   },
   knoir: {
     label: "韓国ノワール", tone: "bold",
@@ -138,7 +142,7 @@ const GENRES = {
       ["地下の王", "지하의 왕"], ["雨の追跡者", "비의 추격자"], ["審判の日", "심판의 날"]],
     taglines: ["生き残るのは、ただひとり。", "この街では、正義も金で買える。", "信じた瞬間、終わる。", "復讐は、まだ始まってもいない。",
       "最後に笑うのは、誰だ。", "悪には、悪で。", "守るために、すべてを壊す。", "この夜が、明けることはない。"],
-    date: () => { const d = futureDate(); return `${d.getFullYear()}.${d.getMonth() + 1}`; },
+    date: (d = futureDate()) => { return `${d.getFullYear()}.${d.getMonth() + 1}`; },
   },
   minitheater: {
     label: "ミニシアター", tone: "quiet",
@@ -147,7 +151,7 @@ const GENRES = {
     gen: [G.timeSoft, G.softOf],
     taglines: ["ただ、そこにいた。", "何も言わなくていい時間があった。", "生活は、つづく。", "誰かの日常は、誰かの映画だ。",
       "光が、ゆっくり部屋を横切っていく。", "なにもない日の、なにか。"],
-    date: () => { const d = futureDate(); return `${d.getFullYear()}.${d.getMonth() + 1}.${d.getDate()} ROADSHOW`; },
+    date: (d = futureDate()) => { return `${d.getFullYear()}.${d.getMonth() + 1}.${d.getDate()} ROADSHOW`; },
   },
   nouvelle: {
     label: "フランス映画", tone: "quiet",
@@ -156,7 +160,7 @@ const GENRES = {
       ["午後の光", "LA LUMIÈRE DE L'APRÈS-MIDI"], ["青い自転車", "LA BICYCLETTE BLEUE"], ["恋人たちの散歩", "LA PROMENADE DES AMANTS"], ["秘密のパン屋", "LA BOULANGERIE SECRÈTE"]],
     taglines: ["恋は、いつも少し遅れてやってくる。", "愛してる。でも、それだけじゃ足りない。", "人生は、ほとんど会話でできている。",
       "パリでもなく、東京でもない、どこか。", "ふたりは、まだ名前をつけていない。"],
-    date: () => { const d = futureDate(); return `${d.getDate()} ${MONTH_FR[d.getMonth()]} ${d.getFullYear()}`; },
+    date: (d = futureDate()) => { return `${d.getDate()} ${MONTH_FR[d.getMonth()]} ${d.getFullYear()}`; },
   },
   horror: {
     label: "ホラー", tone: "bold",
@@ -166,7 +170,7 @@ const GENRES = {
     gen: [G.darkPlace, G.ordThing],
     taglines: ["その店は、百年前から一度も閉まったことがない。", "振り向いたら、終わり。", "あの窓に、誰かいる。", "この写真を撮ったのは、誰？",
       "夜になると、道がひとつ増える。", "決して、名前を呼んではいけない。", "あなたの後ろにも、きっと。", "見つけたら、見つかる。"],
-    date: () => { const d = futureDate(); return `${d.getMonth() + 1}.${d.getDate()} ${WEEK_EN[d.getDay()]}`; },
+    date: (d = futureDate()) => { return `${d.getMonth() + 1}.${d.getDate()} ${WEEK_EN[d.getDay()]}`; },
     rating: () => pick(["R15+　深夜上映のみ", "PG12　ひとりで観ないでください", "R15+", "R18+　閲覧注意"]),
   },
   suspense: {
@@ -176,7 +180,7 @@ const GENRES = {
     gen: [G.timeCrime, G.placeCrime, G.ordThing],
     taglines: ["この街の誰もが、嘘をついている。", "真実は、いつもすぐそこに写っていた。", "残された時間は、あと72時間。", "犯人は、この中にいる。",
       "あなたが見ているものは、本物か。", "その日、街から音が消えた。", "疑え。自分さえも。"],
-    date: () => { const d = futureDate(); return `${d.getFullYear()}.${d.getMonth() + 1}.${d.getDate()} ROADSHOW`; },
+    date: (d = futureDate()) => { return `${d.getFullYear()}.${d.getMonth() + 1}.${d.getDate()} ROADSHOW`; },
   },
   mystery: {
     label: "ミステリー", tone: "bold",
@@ -184,14 +188,14 @@ const GENRES = {
       ["時計塔の謎", "RIDDLE OF THE CLOCK TOWER"], ["幻の一頁", "THE PHANTOM PAGE"], ["密室の午後", "A LOCKED-ROOM AFTERNOON"], ["探偵と三つの嘘", "THREE LIES"]],
     gen: [G.ordThing, G.placeCrime],
     taglines: ["すべての手がかりは、最初から写っていた。", "謎は、パンが焼けるまでに解く。", "嘘はひとつ。容疑者は七人。", "その時計は、なぜ止まったのか。"],
-    date: () => { const d = futureDate(); return `${d.getFullYear()}年${d.getMonth() + 1}月${d.getDate()}日（${WEEK[d.getDay()]}）解禁`; },
+    date: (d = futureDate()) => { return `${d.getFullYear()}年${d.getMonth() + 1}月${d.getDate()}日（${WEEK[d.getDay()]}）解禁`; },
   },
   hk: {
     label: "香港ネオン", tone: "bold",
     titles: [["ネオンの果て", "霓虹盡頭"], ["真夜中の約束", "午夜的約定"], ["港のふたり", "港灣二人"], ["最後の取立て", "最後的追債"],
       ["雨の九龍", "九龍之雨"], ["夜の住人", "夜之住人"], ["狼の掟", "狼之規"], ["失われた午前三時", "失落的凌晨三點"]],
     taglines: ["この街の夜は、誰も眠らない。", "愛も裏切りも、ネオンの色に溶けていく。", "期限切れの恋に、もう一度だけ。", "生きるか、死ぬか。今夜決まる。"],
-    date: () => { const d = futureDate(); return `${d.getFullYear()}.${d.getMonth() + 1}.${d.getDate()} 午夜上映`; },
+    date: (d = futureDate()) => { return `${d.getFullYear()}.${d.getMonth() + 1}.${d.getDate()} 午夜上映`; },
   },
   romance: {
     label: "ロマンス", tone: "quiet",
@@ -201,7 +205,7 @@ const GENRES = {
     gen: [G.timeSoft, G.seasonPlace],
     taglines: ["運命は、いつもの帰り道に落ちていた。", "好きって、こんなに静かな気持ちだったんだ。", "あなたに会うために、この街に来た。",
       "最後の一ページは、ふたりで書こう。", "百回目の偶然は、もう運命でいい。", "この恋に、締め切りはない。"],
-    date: () => { const d = futureDate(); return `${d.getFullYear()}年${d.getMonth() + 1}月${d.getDate()}日（${WEEK[d.getDay()]}）公開`; },
+    date: (d = futureDate()) => { return `${d.getFullYear()}年${d.getMonth() + 1}月${d.getDate()}日（${WEEK[d.getDay()]}）公開`; },
   },
   sf: {
     label: "SF", tone: "bold",
@@ -210,21 +214,21 @@ const GENRES = {
       ["アンドロイドは銀杏の夢を見る", "ANDROIDS DREAM OF GINKGO"], ["シグナル・ゼロ", "SIGNAL ZERO"]],
     taglines: ["この景色は、千年後の地球から届いた。", "同じ朝が、もう三百回目。", "人類最後の一日が、始まる。", "その街は、地図から消えていた。",
       "未来は、もう写っている。", "時間は、まだ足りている。"],
-    date: () => { const d = futureDate(); return `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, "0")}.${String(d.getDate()).padStart(2, "0")}`; },
+    date: (d = futureDate()) => { return `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, "0")}.${String(d.getDate()).padStart(2, "0")}`; },
   },
   fantasy: {
     label: "ファンタジー", tone: "quiet",
     titles: [["星降る街の物語", "TALE OF THE STARFALL TOWN"], ["魔法使いのパン屋", "THE WIZARD'S BAKERY"], ["時を渡る手紙", "THE LETTER ACROSS TIME"],
       ["銀色の森", "THE SILVER FOREST"], ["月の図書館", "LIBRARY OF THE MOON"], ["竜と銀杏の王国", "KINGDOM OF DRAGON AND GINKGO"], ["夜明けの魔法", "DAWN MAGIC"]],
     taglines: ["この街では、千年に一度だけ魔法が戻ってくる。", "扉の向こうは、もうひとつの世界。", "信じた者だけが、見つけられる。", "その願い、叶えてしんぜよう。"],
-    date: () => `${futureDate().getFullYear()}年 ${pick(["春休み", "夏休み", "冬休み", "ゴールデンウィーク"])} 全国ロードショー`,
+    date: (d = futureDate()) => `${d.getFullYear()}年 ${holidayOf(d)} 全国ロードショー`,
   },
   action: {
     label: "80sアクション", tone: "bold",
     titles: [["ラスト・ミッション", "LAST MISSION"], ["爆走ストリート", "STREET FURY"], ["ターゲットは午前零時", "TARGET: MIDNIGHT"], ["鋼鉄の拳", "FIST OF STEEL"],
       ["デッドライン72", "DEADLINE 72"], ["ブレイク・ポイント", "BREAK POINT"], ["怒りの銀杏通り", "FURY ON GINKGO AVE."], ["コード・レッド", "CODE RED"]],
     taglines: ["この夏、街が燃える。", "ルールは、ぶっ壊すためにある。", "ひとりで、全員倒す。", "爆発まで、あと60秒。", "最強の男が、帰ってきた。"],
-    date: () => { const d = futureDate(); return `${d.getMonth() + 1}月${d.getDate()}日 超拡大ロードショー`; },
+    date: (d = futureDate()) => { return `${d.getMonth() + 1}月${d.getDate()}日 超拡大ロードショー`; },
   },
   comedy: {
     label: "コメディ", tone: "fun",
@@ -233,21 +237,21 @@ const GENRES = {
       ["定時で帰りたい勇者", "THE HERO WHO LEAVES AT FIVE"], ["うちの猫が社長です", "MY CAT IS THE CEO"], ["結婚式まであと3時間", "3 HOURS TO THE WEDDING"]],
     taglines: ["笑ってる場合じゃない。でも笑う。", "全米が困惑した。", "ぜったい、うまくいかない。", "大人のくせに、本気でふざける。",
       "今年いちばん、どうでもいい大事件。", "予告編がピーク……じゃない！"],
-    date: () => { const d = futureDate(); return `${d.getMonth() + 1}月${d.getDate()}日 爆笑公開！`; },
+    date: (d = futureDate()) => { return `${d.getMonth() + 1}月${d.getDate()}日 爆笑公開！`; },
   },
   doc: {
     label: "ドキュメンタリー", tone: "quiet",
     titles: [["この街のパン", "BREAD OF THIS TOWN"], ["百年続く店", "A HUNDRED-YEAR SHOP"], ["銀杏並木の一年", "A YEAR UNDER THE GINKGO"],
       ["名もなき日々", "NAMELESS DAYS"], ["朝五時の仕込み", "5 A.M. PREP"], ["路地の記憶", "MEMORIES OF THE ALLEY"], ["働く手", "WORKING HANDS"]],
     taglines: ["これは、あなたの街の物語かもしれない。", "変わらないために、毎日変わり続ける。", "カメラは、3年間まわり続けた。", "普通の人の、普通じゃない毎日。"],
-    date: () => { const d = futureDate(); return `${d.getFullYear()}年${d.getMonth() + 1}月 ${pick(["ポレポレ座", "坂の上シネマ", "名画座ひかり", "銀杏シアター"])}ほか全国順次公開`; },
+    date: (d = futureDate()) => { return `${d.getFullYear()}年${d.getMonth() + 1}月 ${pick(["ポレポレ座", "坂の上シネマ", "名画座ひかり", "銀杏シアター"])}ほか全国順次公開`; },
   },
   jidai: {
     label: "時代劇", tone: "bold",
     titles: [["月下の刃", "MOONLIT BLADE"], ["京の鬼", "THE DEMON OF KYO"], ["無宿の侍", "THE WANDERING SAMURAI"], ["雪の果て", "END OF SNOW"],
       ["鴨川残照", "AFTERGLOW ON THE KAMO"], ["百年の仇", "A CENTURY OF VENGEANCE"], ["斬る", "KIRU"], ["夜叉の道", "PATH OF THE YAKSHA"]],
     taglines: ["斬るか、斬られるか。", "この刀に、恥はない。", "その夜、京の都が燃えた。", "誓いは、血よりも重い。", "義のために、生きる。"],
-    date: () => { const d = futureDate(); return `令和${kanjiNum(d.getFullYear() - 2018)}年 ${pick(["正月", "春", "盛夏", "秋"])} 大公開`; },
+    date: (d = futureDate()) => { return `令和${kanjiNum(d.getFullYear() - 2018)}年 ${eraSeason(d)} 大公開`; },
   },
   showa: {
     label: "昭和レトロ", tone: "fun",
@@ -255,7 +259,7 @@ const GENRES = {
       ["さらば青春の街", "FAREWELL, YOUTH TOWN"], ["夜汽車", "NIGHT TRAIN"], ["若者たちの季節", "SEASON OF THE YOUNG"], ["東京ど真ん中", "DEAD CENTER OF TOKYO"]],
     taglines: ["あの頃、この街には夢があった。", "涙と笑いの、人情巨編。", "男は黙って、パンを焼く。", "ふるさとは、いつも遠くにありて。",
       "総天然色　大感動作！", "全国民、待望の映画化！"],
-    date: () => { const d = futureDate(); return `昭和${kanjiNum(d.getFullYear() - 1925)}年 ${kanjiNum(d.getMonth() + 1)}月 封切`; },
+    date: (d = futureDate()) => { return `昭和${kanjiNum(d.getFullYear() - 1925)}年 ${kanjiNum(d.getMonth() + 1)}月 封切`; },
   },
 };
 
@@ -265,7 +269,8 @@ function randomTitle(g) {
   return pick(gg.titles);
 }
 
-function randomContent(genreKey) {
+// 公開日はふだん今日の日付。↻ を押したときだけ未来の日付にする
+function randomContent(genreKey, when = new Date()) {
   const g = GENRES[genreKey];
   const [title, en] = randomTitle(genreKey);
   return {
@@ -273,7 +278,7 @@ function randomContent(genreKey) {
     tagline: pick(g.taglines),
     cast: randomCast(randInt(2, 5)).join("、"),
     director: randomName(),
-    date: g.date(),
+    date: g.date(when),
     staff: randomStaff(),
     reviews: randomReviews(g.tone),
     festivals: randomFestivals(),
